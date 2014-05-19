@@ -51,41 +51,67 @@ class GUI:
 
     def __init__(self, master):
 
+	# Read the necessary image
         self.logo = PhotoImage(file='./res/logo.gif')
         self.red_led = PhotoImage(file='./res/led_red.gif')
         self.green_led = PhotoImage(file='./res/led_green.gif')
-        self.btn_up = PhotoImage(file='./res/btn_up.gif')
-        self.btn_down = PhotoImage(file='./res/btn_down.gif')
+        self.quit_up = PhotoImage(file='./res/quit_up.gif')
+        self.quit_down = PhotoImage(file='./res/quit_down.gif')
+        self.con_up = PhotoImage(file='./res/con_up.gif')
+        self.con_down = PhotoImage(file='./res/con_down.gif')
+	self.dis_up = PhotoImage(file='./res/dis_up.gif')
+        self.dis_down = PhotoImage(file='./res/dis_down.gif')
 
         bg_color = '#464646'
         fg_color = 'white'
         sub_color = '#BDBDBD'
         
+	# Whatever information about the title etc.
         master.wm_title('wiimote4scratch')
         master.resizable(0,0)
         master.configure(background=bg_color)
         master.tk.call('wm', 'iconphoto', master._w, self.logo)
         master.protocol('WM_DELETE_WINDOW', gui_quit)
         
-        title_font = tkFont.Font(family='Verdana', size=14, weight='bold')
-        subtitle_font = tkFont.Font(family='Verdana', size=11)
-        label_font = tkFont.Font(family='Verdana', size=13)
+        title_font = tkFont.Font(family='Ubuntu', size=14, weight='bold')
+        subtitle_font = tkFont.Font(family='Ubuntu', size=8)
+        label_font = tkFont.Font(family='Ubuntu', size=10)
+	group_font = tkFont.Font(family='Ubuntu', size=8)
 
         self.title_frame = Frame(master)
         self.title_frame.configure(background=bg_color)
         Label(self.title_frame, font=title_font, bg=bg_color, fg=fg_color, text='Wiimote for Scratch 1.4').pack()
         self.title_frame.pack(padx=30, pady=10)
 
+	# We can put a nice logo of the group
 	self.body_logo = Frame(master)
 	self.body_logo.configure(background=bg_color)
 	self.logo_image = Label(self.body_logo, bg=bg_color, image=self.logo)
 	self.logo_image.grid(row=0, column=0)
 	self.body_logo.pack(pady=3)
+
+	# Menu to create the desired number of players and establish the connection
+	self.optionGroup = LabelFrame(master, text="Options", bg=bg_color, fg=fg_color, padx=4, pady=4, font=group_font)
+	self.optionGroup.pack(padx=10, pady=10)
+	self.option_frame = Frame(self.optionGroup)
+        self.option_frame.configure(background=bg_color)
+	self.label_nbplayer = Label(self.option_frame, text='# of players', bg=bg_color, fg=fg_color, font=label_font, padx=3)
+	self.label_nbplayer.grid(row=0, column=0)
+	self.spinbox_nbplayer = Spinbox(self.option_frame, from_=1, to=4, bg=bg_color, fg=fg_color, font=subtitle_font, width=2)
+	self.spinbox_nbplayer.grid(row=0, column=1, padx=5)
+	self.con_btn = Label(self.optionGroup, bg=bg_color, image=self.con_up)
+        self.con_btn.bind('<Button-1>', self.con_toggle)
+        self.con_btn.bind('<ButtonRelease-1>', self.connect)
+	self.option_frame.pack(pady=5)
+        self.con_btn.pack(pady=5)
 	
-        self.body_frame = Frame(master)
+	# Create a group in order to show the information about the connection
+	self.connectionGroup = LabelFrame(master, text="Connection information", bg=bg_color, fg=fg_color, padx=4, pady=4, font=group_font)
+	self.connectionGroup.pack(padx=10, pady=10)
+        self.body_frame = Frame(self.connectionGroup)
         self.body_frame.configure(background=bg_color)
-        self.leap_status = Label(self.body_frame, bg=bg_color, image=self.red_led)
-        self.leap_status.grid(row=0, column=1, sticky=W)
+        self.wiimote_status = Label(self.body_frame, bg=bg_color, image=self.red_led)
+        self.wiimote_status.grid(row=0, column=1, sticky=W)
         Label(self.body_frame, text='Wiimote', bg=bg_color, fg=fg_color, font=label_font).grid(row=0, column=0, padx=10, sticky=W)
         self.scratch_status = Label(self.body_frame, bg=bg_color, image=self.red_led)
         self.scratch_status.grid(row=1, column=1, sticky=W)
@@ -94,7 +120,7 @@ class GUI:
         
         self.foot_frame = Frame(master)
         self.foot_frame.configure(background=bg_color)
-        self.quit_btn = Label(self.foot_frame, bg=bg_color, image=self.btn_up)
+        self.quit_btn = Label(self.foot_frame, bg=bg_color, image=self.quit_up)
         self.quit_btn.bind('<Button-1>', self.quit_toggle)
         self.quit_btn.bind('<ButtonRelease-1>', self.quit)
         self.quit_btn.pack(pady=(10, 2))
@@ -106,29 +132,48 @@ class GUI:
         gui_quit()
         
     def quit_toggle(self, event):
-        self.quit_btn.config(image=self.btn_down)
+        self.quit_btn.config(image=self.quit_down)
+
+    def connect(self,item):
+	print "connection to scratch"
+	s = scratch.Scratch()
+	s.broadcast('connected!')
+
+	self.scratch_status.config(image=self.green_led);
+	time.sleep(2)
+
+	nPlayer=int(self.spinbox_nbplayer.get())
+	print nPlayer
+
+	# Create a for loop to add all the desired player
+	wiiList=[]
+	for p in range(nPlayer):
+		# Create object
+		wiiList.append(wiiscractch())
+		# Connect a wiimote
+		wiiList[p].wiimote_connect(p)
+		# Link both wiimote to scratch
+		wiiList[p].scratch_connect(s)
+
+	while True:
+
+		for p in range(nPlayer):
+			wiiList[p].wiimote_check_scratch_update()
+
+    def con_toggle(self, event):
+        self.con_btn.config(image=self.con_down)
                 
     def set_status(self, dev, connected):
         if dev == 'wiimote':
             if connected:
-                self.leap_status.config(image=self.green_led)
+                self.wiimote_status.config(image=self.green_led)
             else:
-                self.leap_status.config(image=self.red_led)
+                self.wiimote_status.config(image=self.red_led)
         elif dev == 'scratch':
             if connected:
                 self.scratch_status.config(image=self.green_led)
             else: 
                 self.scratch_status.config(image=self.red_led)
-
-def refresh_screen(wiimote):
-        gui.set_status('wiimote', wiimote.wii_is_connected)
-        gui.set_status('scratch', wiimote.wii_is_linked)
-
-def clear_screen():
-    if PLAT == 'Linux' or PLAT == 'Darwin':
-        os.system('clear')
-    elif PLAT == 'Windows':
-        os.system('CLS')
 
 def gui_quit():
     root.quit()
