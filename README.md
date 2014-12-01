@@ -39,7 +39,7 @@ make
 make install
 ```
 
-It is possible that the /usr/local is not by included in the python path. To do so, you can add the following line to your `.bashrc`:
+It is possible that the `/usr/local` is not included in the python path. To do so, you can add the following line to your `.bashrc`:
 
 ```
 export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.7/site-packages
@@ -70,11 +70,11 @@ make install
 Once all the dependencies install, the application wiimotescratch can be launched. The application allowing the bridging between the wiimote(s) and scratch can be found. To execute the application execute the following command line:
 
 ```
-ptyhon wiimote4scratch.py
+python wiimote4scratch.py
 ```
 
-A python class is available in `code>wiiscratch.py`
+A python class is available in `python/wiiscratch.py`
 
 ## Scratch
 
-In the scratch folder, several examples of possible applications of the wiimote in scratch are presented.
+In `scratch/`, several examples of possible applications of the wiimote in scratch are presented.
