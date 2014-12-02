@@ -73,6 +73,10 @@ Once all the dependencies install, the application wiimotescratch can be launche
 python wiimote4scratch.py
 ```
 
+Then, you need to start Scratch and open an example (File->Open). You are ready to establish a connection with the different component (i.e., wiimote and Scratch). Select the number of wiimote to connect and click on the button Connect. Once that the connections to Scratch and the wiimotes are established, you should see two green ticks as status.
+
+You can quit the application at any moment using the Quit button.
+
 A python class is available in `python/wiiscratch.py`
 
 ## Scratch
